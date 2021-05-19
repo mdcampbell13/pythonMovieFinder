@@ -1,6 +1,7 @@
 import http.client
 import json
 import datetime
+from pytz import timezone
 
 import os
 from dotenv import load_dotenv
@@ -69,7 +70,9 @@ def holiday():
         'x-rapidapi-host': "public-holiday.p.rapidapi.com"
         }
 
-    fnow = datetime.datetime.now().year
+    tz = timezone('EST')
+
+    fnow = datetime.datetime.now(tz).year
 
     fconn = "/{}/US".format(fnow)
 
@@ -83,8 +86,8 @@ def holiday():
 
     i = 0
     while i < len(data2):
-        if datetime.datetime.now() < datetime.datetime.strptime(data2[i]["date"], "%Y-%m-%d"):
-            t_diff = datetime.datetime.strptime(data2[i]["date"], "%Y-%m-%d") - datetime.datetime.now()
+        if datetime.datetime.now(tz) < datetime.datetime.strptime(data2[i]["date"], "%Y-%m-%d").replace(tzinfo=timezone('EST')):
+            t_diff = datetime.datetime.strptime(data2[i]["date"], "%Y-%m-%d").replace(tzinfo=timezone('EST')) - datetime.datetime.now(tz)
             print("\nThe next holiday is {}.\nThe party starts in {} days!".format(data2[i]["name"], t_diff.days))
             break
         i += 1
