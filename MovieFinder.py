@@ -26,7 +26,7 @@ def movie_finder():
         'x-rapidapi-host': "imdb8.p.rapidapi.com"
         }
 
-    m_string = input('Enter a movie you would like to search for.  ')
+    m_string = input('\nEnter a movie you would like to search for.  ')
 
     if " " in m_string:
         m_string = m_string.replace(" ", "_")
@@ -98,7 +98,7 @@ def holiday():
 while True:
 
     print('\nFor Movie Info Enter "1"\nFor Upcoming Holiday Counter Enter "2"\nTo Quit Enter "Q"')
-    command = input('Please Enter A Selection:  ')
+    command = input('\nPlease Enter A Selection:  ')
     if command == "1":
         try:
             movie_finder()
