@@ -103,6 +103,8 @@ while True:
             print("\nSorry. You must enter a value.")
     elif command == "2":
         holiday()
-    elif command == "Q" or "q":
+    elif command == "Q" or command == "q":
         print("\n")
         break
+    else:
+        print("\nSorry. You must enter a valid option.")
