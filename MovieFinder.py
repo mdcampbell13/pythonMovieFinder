@@ -2,11 +2,14 @@ import http.client
 import json
 import datetime
 from pytz import timezone
-
+from os import system
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+cls = lambda: system('cls')
+cls()
 
 OPENAPIKEY = os.getenv('OPENAPI_KEY')
 
