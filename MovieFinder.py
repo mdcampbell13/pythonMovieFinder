@@ -42,7 +42,7 @@ def movie_finder():
         dStars1 = dStars1[:last_char_index] + " and" + dStars1[last_char_index+1:]
         dYear1 = dataJson["d"][0]["y"]
     except KeyError:
-        print('Blessed are the cheesemakers. For they shall inherit this KeyError.')
+        print("\nEntering nothing results in the first occurance in IMDB's database being retrieved.")
 
 
 
@@ -92,13 +92,6 @@ def holiday():
             break
         i += 1
 
-
-    # print(data.decode("utf-8"))
-
-
-
-
-
 while True:
 
     print('\nFor Movie Info Enter "1"\nFor Upcoming Holiday Counter Enter "2"\nTo Quit Enter "Q"')
@@ -111,4 +104,5 @@ while True:
     elif command == "2":
         holiday()
     elif command == "Q" or "q":
+        print("\n")
         break
