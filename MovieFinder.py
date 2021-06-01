@@ -2,7 +2,11 @@ import http.client
 import json
 import datetime
 from pytz import timezone
+import requests
+from bs4 import BeautifulSoup
 from os import system
+import json
+import math
 import os
 from dotenv import load_dotenv
 
@@ -12,6 +16,7 @@ cls = lambda: system('cls')
 cls()
 
 OPENAPIKEY = os.getenv('OPENAPI_KEY')
+
 
 def movie_finder():
     dTitle1 = "Not Found"
@@ -63,8 +68,6 @@ def movie_finder():
         print(" ")
 
 
-
-
 def holiday():
     conn = http.client.HTTPSConnection("public-holiday.p.rapidapi.com")
 
@@ -95,9 +98,92 @@ def holiday():
             break
         i += 1
 
+
+def property_search():
+    os.system('cls')
+
+    class Property:
+        def __init__(self, prop_image, address, owner, prop_type, parcel_ID):
+            self.prop_image = prop_image
+            self.address = address
+            self.owner = owner
+            self.prop_type = prop_type
+            self.parcel_ID = parcel_ID
+
+
+    print("\n")
+
+    prop_list = []
+
+    page_num = 1
+
+    address = input("What street would you like to search? ")
+
+    address = address.replace(".", "")
+
+
+    print("\n")
+
+    try:
+        r = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num), headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
+        c=r.content
+        soup=BeautifulSoup(c, "html.parser")
+        all=soup.find_all("td")
+
+
+        records_found = soup.find("h1", {"id": "results"}).find_next("h3")
+
+        num_str = records_found.text.split()[0]
+
+        print(num_str + " Records Found")
+
+        num_int = int(num_str)
+
+        total_pages = math.ceil(num_int / 25)
+
+        j = 0
+
+
+        while j < total_pages:
+
+            r = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num), headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
+            c=r.content
+            soup=BeautifulSoup(c, "html.parser")
+            all=soup.find_all("td")
+
+
+
+            for span_tag in soup.findAll("span"):
+                span_tag.replace_with("")
+
+            prop_num = 1
+
+
+            for i in range(0, len(all), 5):
+
+                prop1 = Property(all[i].text, all[i+1].text, all[i+2].text, all[i+3].text, all[i+4].text)
+                jprop1 = json.dumps(prop1.__dict__)
+                print("\nOwner:       " + prop1.owner)
+                print("Address:     " + prop1.address)
+                print("Prop. Type:  " + prop1.prop_type)
+                print("Parcel ID:   " + prop1.parcel_ID)
+                prop_list.append([jprop1])
+
+            page_num += 1
+            j += 1
+
+    except AttributeError:
+        print("Oppps. Something went wrong.")
+
+    print("\n")
+
+    # print(prop_list)
+
+
+
 while True:
 
-    print('\nFor Movie Info Enter "1"\nFor Upcoming Holiday Counter Enter "2"\nTo Quit Enter "Q"')
+    print('\nFor Movie Info Enter "1"\nFor Upcoming Holiday Counter Enter "2"\nFor Jefferson County Street Property Search enter "3"\nTo Quit Enter "Q"')
     command = input('\nPlease Enter A Selection:  ')
     if command == "1":
         try:
@@ -106,6 +192,8 @@ while True:
             print("\nSorry. You must enter a value.")
     elif command == "2":
         holiday()
+    elif command == "3":
+        property_search()
     elif command == "Q" or command == "q":
         print("\n")
         break
