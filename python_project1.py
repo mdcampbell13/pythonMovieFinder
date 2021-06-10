@@ -9,6 +9,8 @@ import json
 import math
 import os
 from dotenv import load_dotenv
+import pandas as pd
+import csv
 
 load_dotenv()
 
@@ -115,6 +117,8 @@ def property_search():
 
     prop_list = []
 
+    prop_dict = {"property_owner":[], "property_address":[],"property_type":[], "parcel_ID":[]}
+
     page_num = 1
 
     address = input("What street would you like to search? ")
@@ -125,15 +129,16 @@ def property_search():
     print("\n")
 
     try:
-        r = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num), headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
-        c=r.content
-        soup=BeautifulSoup(c, "html.parser")
-        all=soup.find_all("td")
+        r1 = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num),
+             headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
+        c1=r1.content
+        soup1=BeautifulSoup(c1, "html.parser")
+        all1=soup1.find_all("td")
 
 
-        records_found = soup.find("h1", {"id": "results"}).find_next("h3")
+        records_found1 = soup1.find("h1", {"id": "results"}).find_next("h3")
 
-        num_str = records_found.text.split()[0]
+        num_str = records_found1.text.split()[0]
 
         print(num_str + " Records Found")
 
@@ -143,25 +148,28 @@ def property_search():
 
         j = 0
 
+        p2_listings = []
+
+        p_listings = ["Owner", "Address", "Type", "Parcel"]
 
         while j < total_pages:
 
-            r = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num), headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
-            c=r.content
-            soup=BeautifulSoup(c, "html.parser")
-            all=soup.find_all("td")
+            r2 = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num),
+                 headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
+            c2=r2.content
+            soup2=BeautifulSoup(c2, "html.parser")
+            all2=soup2.find_all("td")
 
 
 
-            for span_tag in soup.findAll("span"):
+            for span_tag in soup2.findAll("span"):
                 span_tag.replace_with("")
 
-            prop_num = 1
+
+            for i in range(0, len(all2), 5):
 
 
-            for i in range(0, len(all), 5):
-
-                prop1 = Property(all[i].text, all[i+1].text, all[i+2].text, all[i+3].text, all[i+4].text)
+                prop1 = Property(all2[i].text, all2[i+1].text, all2[i+2].text, all2[i+3].text, all2[i+4].text)
                 jprop1 = json.dumps(prop1.__dict__)
                 print("\nOwner:       " + prop1.owner)
                 print("Address:     " + prop1.address)
@@ -169,13 +177,34 @@ def property_search():
                 print("Parcel ID:   " + prop1.parcel_ID)
                 prop_list.append([jprop1])
 
+                prop_dict = {"property_owner": all2[i+2].text, "property_address": all2[i+1].text,
+                            "property_type": all2[i+3].text, "parcel_ID": all2[i+4].text}
+                print(prop_dict)
             page_num += 1
             j += 1
+
+            p_listings.append(all2[i+2].text)
+            p_listings.append(all2[i+1].text)
+            p_listings.append(all2[i+3].text)
+            p_listings.append(all2[i+4].text)
+
+            p2_listings = p2_listings.append(p_listings)
+
 
     except AttributeError:
         print("Oppps. Something went wrong.")
 
     print("\n")
+    print(prop_dict)
+
+
+    print("\n")
+
+    print(p_listings)
+
+    print("\n")
+
+    pd.DataFrame(p2_listings).to_csv("p2_listing.csv", header=None, index=None)
 
     # print(prop_list)
 
