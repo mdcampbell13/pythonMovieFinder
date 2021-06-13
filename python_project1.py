@@ -10,6 +10,8 @@ import math
 import os
 from dotenv import load_dotenv
 import pandas as pd
+import numpy as np
+
 import csv
 
 load_dotenv()
@@ -105,19 +107,26 @@ def property_search():
     os.system('cls')
 
     class Property:
-        def __init__(self, prop_image, address, owner, prop_type, parcel_ID):
+        def __init__(self, prop_image, address, owner, prop_type, parcel_ID, prop_value, prop_acres, prop_neighborhood):
             self.prop_image = prop_image
             self.address = address
             self.owner = owner
             self.prop_type = prop_type
             self.parcel_ID = parcel_ID
+            self.prop_value = prop_value
+            self.prop_acres = prop_acres
+            self.prop_neighborhood = prop_neighborhood
 
 
     print("\n")
 
     prop_list = []
 
-    prop_dict = {"property_owner":[], "property_address":[],"property_type":[], "parcel_ID":[]}
+
+    txprop_list = []
+    txprop_list = ["Column1", "Prop. Image", "Owner", "Address", "Property Type", "Parcel ID"]
+
+    prop_dict = {"property_image":[], "property_owner":[], "property_address":[],"property_type":[], "parcel_ID":[]}
 
     page_num = 1
 
@@ -133,7 +142,6 @@ def property_search():
              headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
         c1=r1.content
         soup1=BeautifulSoup(c1, "html.parser")
-        all1=soup1.find_all("td")
 
 
         records_found1 = soup1.find("h1", {"id": "results"}).find_next("h3")
@@ -148,9 +156,9 @@ def property_search():
 
         j = 0
 
-        p2_listings = []
+        total_prop_dict = []
 
-        p_listings = ["Owner", "Address", "Type", "Parcel"]
+        p2_listings = ["Owner", "Address", "Type", "Parcel", "Acres", "Neighborhood", "Value"]
 
         while j < total_pages:
 
@@ -166,49 +174,73 @@ def property_search():
                 span_tag.replace_with("")
 
 
+
             for i in range(0, len(all2), 5):
 
+                all2_image_rep = all2[i].a.img['src']
 
-                prop1 = Property(all2[i].text, all2[i+1].text, all2[i+2].text, all2[i+3].text, all2[i+4].text)
+                all2_image_rep2 = all2_image_rep.replace("w75-h57", "w600-h456")
+
+                val_pg = all2[i].a['href']
+
+                r3 = requests.get(("https://jeffersonpva.ky.gov" + val_pg).format(address, page_num),
+                     headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
+                c3=r3.content
+                soup3=BeautifulSoup(c3, "html.parser")
+                all3=soup3.find_all("dd")
+
+
+                prop1 = Property("https://jeffersonpva.ky.gov" + all2_image_rep2, all2[i+1].text, all2[i+2].text, all2[i+3].text, all2[i+4].text, all3[2].text, all3[3].text, all3[4].text)
                 jprop1 = json.dumps(prop1.__dict__)
-                print("\nOwner:       " + prop1.owner)
-                print("Address:     " + prop1.address)
-                print("Prop. Type:  " + prop1.prop_type)
-                print("Parcel ID:   " + prop1.parcel_ID)
+                print("\nProp. Image:     " + prop1.prop_image)
+                print("Owner:           " + prop1.owner)
+                print("Address:         " + prop1.address)
+                print("Prop. Type:      " + prop1.prop_type)
+                print("Parcel ID:       " + prop1.parcel_ID)
+                print("Acres:           " + prop1.prop_acres)
+                print("Neighborhood:    " + prop1.prop_neighborhood)
+                print("Value:           $" + prop1.prop_value)
                 prop_list.append([jprop1])
 
-                prop_dict = {"property_owner": all2[i+2].text, "property_address": all2[i+1].text,
-                            "property_type": all2[i+3].text, "parcel_ID": all2[i+4].text}
-                print(prop_dict)
+                txprop_list.append("https://jeffersonpva.ky.gov" + all2[i].a.img['src'])
+                txprop_list.append(all2[i+2].text)
+                txprop_list.append(all2[i+1].text)
+                txprop_list.append(all2[i+3].text)
+                txprop_list.append(all2[i+4].text)
+                txprop_list.append(all3[2].text)
+                txprop_list.append(all3[3].text)
+                txprop_list.append(all3[4].text)
+
+                prop_dict = {"Property_image": "https://jeffersonpva.ky.gov" + all2[i].a.img['src'], "property_owner": all2[i+2].text, "property_address": all2[i+1].text,
+                            "property_type": all2[i+3].text, "parcel_ID": all2[i+4].text, "acres": all3[2].text, "Neighborhood": all3[3].text, "Value": all3[4].text}
+
+                app_json = json.dumps(prop_dict)
+
+                total_prop_dict.append(app_json)
+                
+
             page_num += 1
             j += 1
-
-            p_listings.append(all2[i+2].text)
-            p_listings.append(all2[i+1].text)
-            p_listings.append(all2[i+3].text)
-            p_listings.append(all2[i+4].text)
-
-            p2_listings = p2_listings.append(p_listings)
 
 
     except AttributeError:
         print("Oppps. Something went wrong.")
 
-    print("\n")
-    print(prop_dict)
 
 
-    print("\n")
-
-    print(p_listings)
 
     print("\n")
+    print(prop_list)
+    
 
-    pd.DataFrame(p2_listings).to_csv("p2_listing.csv", header=None, index=None)
+    print("\n")
+    print(txprop_list)
 
-    # print(prop_list)
+    print("\n")
 
+    print(total_prop_dict)
 
+    
 
 while True:
 
