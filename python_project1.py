@@ -147,12 +147,14 @@ def property_search():
         # This block of code iterates through the number of pages and scrapes info from pages
 
         while j < total_pages:
-
-            r2 = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num),
-                 headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
-            c2=r2.content
-            soup2=BeautifulSoup(c2, "html.parser")
-            all2=soup2.find_all("td")
+            try:
+                r2 = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num),
+                headers={'User-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'})
+                c2=r2.content
+                soup2=BeautifulSoup(c2, "html.parser")
+                all2=soup2.find_all("td")
+            except IndexError:
+                print("Oppps. You can only enter a street name, not a full address")
 
 
 
