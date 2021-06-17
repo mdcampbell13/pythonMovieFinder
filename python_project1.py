@@ -5,12 +5,11 @@ from pytz import timezone
 import requests
 from bs4 import BeautifulSoup
 from os import system
-import json
 import math
 import os
 from dotenv import load_dotenv
 import pandas as pd
-import numpy as np
+
 
 import csv
 
@@ -104,29 +103,16 @@ def holiday():
 
 
 def property_search():
-    os.system('cls')
 
-    class Property:
-        def __init__(self, prop_image, address, owner, prop_type, parcel_ID, prop_value, prop_acres, prop_neighborhood):
-            self.prop_image = prop_image
-            self.address = address
-            self.owner = owner
-            self.prop_type = prop_type
-            self.parcel_ID = parcel_ID
-            self.prop_value = prop_value
-            self.prop_acres = prop_acres
-            self.prop_neighborhood = prop_neighborhood
+# A note regarding this function. A completed list of Jefferson county streets can be easily scraped from 'https://geographic.org/streetview/usa/ky/jefferson/louisville.html' and iterated through
+# inserting every street name in the county into the street variable. This would compile a complete listing of every property in Jefferson county, the data attributes of them and place them in a
+# csv file. I did not include any code to do that since it would take literally days for it to run if not longer.
+    os.system('cls')
 
 
     print("\n")
 
-    prop_list = []
-
-
-    txprop_list = []
-    txprop_list = ["Column1", "Prop. Image", "Owner", "Address", "Property Type", "Parcel ID"]
-
-    prop_dict = {"property_image":[], "property_owner":[], "property_address":[],"property_type":[], "parcel_ID":[]}
+    prop_dict = []
 
     page_num = 1
 
@@ -136,6 +122,8 @@ def property_search():
 
 
     print("\n")
+
+    # This block of code gets the number of records off the initial webpage and then calculates the number of pages based on 25 properties per page
 
     try:
         r1 = requests.get("https://jeffersonpva.ky.gov/property-search/property-listings/?order=ASC&sort=street&psfldAddress={}&searchType=StreetSearch&searchPage={}#results".format(address, page_num),
@@ -156,9 +144,7 @@ def property_search():
 
         j = 0
 
-        total_prop_dict = []
-
-        p2_listings = ["Owner", "Address", "Type", "Parcel", "Acres", "Neighborhood", "Value"]
+        # This block of code iterates through the number of pages and scrapes info from pages
 
         while j < total_pages:
 
@@ -181,6 +167,8 @@ def property_search():
 
                 all2_image_rep2 = all2_image_rep.replace("w75-h57", "w600-h456")
 
+                # This block of code reaches into the individual property page of each property and scrapes the assessed value of each property
+
                 val_pg = all2[i].a['href']
 
                 r3 = requests.get(("https://jeffersonpva.ky.gov" + val_pg).format(address, page_num),
@@ -190,35 +178,21 @@ def property_search():
                 all3=soup3.find_all("dd")
 
 
-                prop1 = Property("https://jeffersonpva.ky.gov" + all2_image_rep2, all2[i+1].text, all2[i+2].text, all2[i+3].text, all2[i+4].text, all3[2].text, all3[3].text, all3[4].text)
-                jprop1 = json.dumps(prop1.__dict__)
-                print("\nProp. Image:     " + prop1.prop_image)
-                print("Owner:           " + prop1.owner)
-                print("Address:         " + prop1.address)
-                print("Prop. Type:      " + prop1.prop_type)
-                print("Parcel ID:       " + prop1.parcel_ID)
-                print("Acres:           " + prop1.prop_acres)
-                print("Neighborhood:    " + prop1.prop_neighborhood)
-                print("Value:           $" + prop1.prop_value)
-                prop_list.append([jprop1])
 
-                txprop_list.append("https://jeffersonpva.ky.gov" + all2[i].a.img['src'])
-                txprop_list.append(all2[i+2].text)
-                txprop_list.append(all2[i+1].text)
-                txprop_list.append(all2[i+3].text)
-                txprop_list.append(all2[i+4].text)
-                txprop_list.append(all3[2].text)
-                txprop_list.append(all3[3].text)
-                txprop_list.append(all3[4].text)
 
-                prop_dict = {"Property_image": "https://jeffersonpva.ky.gov" + all2[i].a.img['src'], "property_owner": all2[i+2].text, "property_address": all2[i+1].text,
-                            "property_type": all2[i+3].text, "parcel_ID": all2[i+4].text, "acres": all3[2].text, "Neighborhood": all3[3].text, "Value": all3[4].text}
+                prop_dict2 = {"Property_image": "https://jeffersonpva.ky.gov" + all2_image_rep2, "property_owner": all2[i+2].text, "property_address": all2[i+1].text, "property_type": all2[i+3].text, "parcel_ID": all2[i+4].text, "acres": all3[3].text, "Neighborhood": all3[4].text, "Value": all3[2].text}
 
-                app_json = json.dumps(prop_dict)
+                print("\nProp. Image:     " + "https://jeffersonpva.ky.gov" + all2_image_rep2)
+                print("Owner:           " + all2[i+2].text)
+                print("Address:         " + all2[i+1].text)
+                print("Prop. Type:      " + all2[i+3].text)
+                print("Parcel ID:       " + all2[i+4].text)
+                print("Acres:           " + all3[3].text)
+                print("Neighborhood:    " + all3[4].text)
+                print("Value:           $" + all3[2].text)
 
-                total_prop_dict.append(app_json)
+                prop_dict.append(prop_dict2)
                 
-
             page_num += 1
             j += 1
 
@@ -227,18 +201,16 @@ def property_search():
         print("Oppps. Something went wrong.")
 
 
+    a = prop_dict  
 
+    type(a[0])
 
-    print("\n")
-    print(prop_list)
-    
+    df = pd.DataFrame(a)
 
-    print("\n")
-    print(txprop_list)
+    df.to_csv(r'CSV_files/property_info.csv')
 
-    print("\n")
+    print('\n A CSV file containing the information from this query has been created in the "CSV_files" folder in the root of this directory.\n')
 
-    print(total_prop_dict)
 
     
 
