@@ -15,8 +15,6 @@ import csv
 
 load_dotenv()
 
-cls = lambda: system('cls')
-cls()
 
 OPENAPIKEY = os.getenv('OPENAPI_KEY')
 
@@ -107,7 +105,6 @@ def property_search():
 # A note regarding this function. A completed list of Jefferson county streets can be easily scraped from 'https://geographic.org/streetview/usa/ky/jefferson/louisville.html' and iterated through
 # inserting every street name in the county into the street variable. This would compile a complete listing of every property in Jefferson county, the data attributes of them and place them in a
 # csv file. I did not include any code to do that since it would take literally days for it to run if not longer.
-    os.system('cls')
 
 
     print("\n")
