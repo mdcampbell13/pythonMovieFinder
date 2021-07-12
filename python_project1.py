@@ -102,7 +102,7 @@ def property_search():
 
 # A note regarding this function. A completed list of Jefferson county streets can be easily scraped from 'https://geographic.org/streetview/usa/ky/jefferson/louisville.html' and iterated through
 # inserting every street name in the county into the street variable. This would compile a complete listing of every property in Jefferson county, the data attributes of them and place them in a
-# csv file. I did not include any code to do that since it would take literally days for it to run if not longer.
+# csv file. I did not include any code to do that since Jefferson County has over 447,000 properties and it would take 10 days 11 hours 33 minutes and 36 seconds for that function to complete.
 
 
     print("\n")
